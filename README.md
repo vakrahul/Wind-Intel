@@ -183,18 +183,24 @@ sequenceDiagram
 1. **Actual Wind Generation (`FUELHH` Stream):**
    - **Endpoint:** [https://bmrs.elexon.co.uk/api-documentation/endpoint/datasets/FUELHH/stream](https://bmrs.elexon.co.uk/api-documentation/endpoint/datasets/FUELHH/stream) (`https://data.elexon.co.uk/bmrs/api/v1/datasets/FUELHH/stream`, filtered to `fuelType = WIND`).
    - **Half-Hourly to Hourly Alignment:** `FUELHH` provides 30-minute settlement periods (`:00` and `:30`), whereas `WINDFOR` forecasts are hourly (`:00`). Each pair of valid half-hourly observations is averaged into an hourly figure:
-     $$\text{actual\_hourly\_mw} = \frac{\text{actual\_at\_hour\_start\_mw} + \text{actual\_at\_half\_hour\_mw}}{2}$$
+     ```text
+     actual_hourly_mw = (actual_at_hour_start_mw + actual_at_half_hour_mw) / 2
+     ```
    - **Record Reconciliation:** `1,680` total `FUELHH` records ingested = `1,488` January 2026 half-hourly records (`744` aligned hours, `100%` coverage) + `192` December 28–31, 2025 half-hourly records (`96` aligned hours retained for lag context). Missing values are never converted to zero.
 
 2. **Historical Wind Forecasts (`WINDFOR` Stream):**
    - **Endpoint:** [https://bmrs.elexon.co.uk/api-documentation/endpoint/datasets/WINDFOR/stream](https://bmrs.elexon.co.uk/api-documentation/endpoint/datasets/WINDFOR/stream) (`https://data.elexon.co.uk/bmrs/api/v1/datasets/WINDFOR/stream`).
-   - **Historical Decision Cutoff Selection:** For each target delivery hour $t$, given a decision cutoff $C$ (default `11:00 Europe/London on D-1`, configurable in the UI), the platform selects the record with the greatest `publishTime` satisfying:
-     $$\text{forecast.startTime} = t \quad \text{and} \quad \text{forecast.publishTime} \le C$$
-     Forecasts published after $C$ (`publishTime > C`) are visibly excluded so future information never leaks into historical decision evaluation.
+   - **Historical Decision Cutoff Selection:** For each target delivery hour `t`, given a decision cutoff `C` (default `11:00 Europe/London on D-1`, configurable in the UI), the platform selects the record with the greatest `publishTime` satisfying:
+     ```text
+     forecast.startTime == t   AND   forecast.publishTime <= C
+     ```
+     Forecasts published after `C` (`publishTime > C`) are visibly excluded so future information never leaks into historical decision evaluation.
    - **Record Reconciliation:** `21,024` raw `WINDFOR` records fetched across publication windows from December 27, 2025 to January 31, 2026 minus `416` out-of-window target hours = `20,608` validated records across `288` distinct `publishTime` vintages (`18,080` targeting January 2026 hours, averaging `24.3` vintages per hour).
 
 3. **Forecast Error Convention:**
-   $$\text{error\_mw} = \text{forecast\_mw} - \text{actual\_hourly\_mw}$$
+   ```text
+   error_mw = forecast_mw - actual_hourly_mw
+   ```
    - **Positive (`+`):** Overforecasting (actual wind was lower than forecast; wind shortfall).
    - **Negative (`-`):** Underforecasting (actual wind was higher than forecast; wind surplus).
 
