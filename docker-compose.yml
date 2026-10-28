@@ -1,0 +1,46 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: windline-backend:1.0.0
+    container_name: windline-backend
+    restart: unless-stopped
+    environment:
+      - WINDLINE_ENV=production
+      - ELEXON_BASE_URL=https://data.elexon.co.uk/bmrs/api/v1
+      - WINDLINE_DATA_DIR=/app/data
+      - CORS_ORIGINS=http://localhost:8080,http://localhost:5173,http://127.0.0.1:8080,http://127.0.0.1:5173
+    ports:
+      - "8000:8000"
+    volumes:
+      - windline_data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 25s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ""
+    image: windline-frontend:1.0.0
+    container_name: windline-frontend
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:80/"]
+      interval: 25s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  windline_data:

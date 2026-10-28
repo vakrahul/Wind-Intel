@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: windline-backend-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/health
+    envVars:
+      - key: WINDLINE_ENV
+        value: production
+      - key: ELEXON_BASE_URL
+        value: https://data.elexon.co.uk/bmrs/api/v1
+      - key: WINDLINE_DATA_DIR
+        value: /app/data
+      - key: CORS_ORIGINS
+        sync: false
