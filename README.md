@@ -16,6 +16,17 @@ The platform reconstructs historical forecast availability at a configurable pur
 | **Mean Forecast Bias** | **`+1,840.30 MW`** | `error_mw = forecast_mw - actual_mw` (`+` = Overforecast) |
 | **Overforecast / Underforecast Split** | **`84.41%` / `15.59%`** | `628` hours overforecast (`+`) vs. `116` hours underforecast (`-`) |
 | **Recommended Backup Buffers** | `P50: 1,641 MW` • `P75: 2,991 MW` • `P90: 4,312 MW` | Quantified wind shortfall buffers for thermal reserve planning |
+| **Generation-Level Accuracy (Quantiles)** | `Low (<=P33: 9,367 MW): MAE 1,840 MW` • `Med (P33-P67): MAE 2,031 MW` • `High (>P67: 14,670 MW): MAE 2,497 MW` | Dynamic empirical tertile quantiles derived from January 2026 actuals |
+
+---
+
+## Launching the Full-Screen Control Room Demo
+
+Click the **`Launch Live Demo`** button in the top navigation bar (or on the Home hero section) to open the **Full-Screen National Wind Control Room Demo** (`frontend/src/pages/LiveControlRoomDemo.jsx`):
+- **Historical Decision Time Machine:** Select any January 1–31, 2026 delivery date, delivery hour (`00:00`–`23:00`), and decision cutoff (`11:00 Europe/London on D-1` default assumption).
+- **Live Clock vs. Historical Data Separation:** Displays a live ticking `Europe/London` system clock alongside a prominent `HISTORICAL DATASET: JAN 2026 REPLAY` indicator.
+- **7-Node Interactive Energy Intelligence Tree:** Traces `Delivery Hour → Decision Cutoff → Eligible Forecast Vintages → Latest Eligible Forecast → Actual Generation → Forecast Error → Procurement Insight`.
+- **Return to Dashboard:** Click **`← Back to Dashboard`** at the top-left at any time.
 
 ---
 
@@ -96,6 +107,7 @@ React + Vite Frontend (Plain JavaScript/JSX, Recharts, Framer Motion, Custom SVG
 │   │   │   └── StateBanners.jsx
 │   │   ├── pages/
 │   │   │   ├── LandingPage.jsx
+│   │   │   ├── LiveControlRoomDemo.jsx    # Full-screen control room demo & 7-node tree
 │   │   │   ├── OverviewPage.jsx
 │   │   │   ├── IntelligenceTreePage.jsx
 │   │   │   ├── ForecastTimelinePage.jsx

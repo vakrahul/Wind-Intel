@@ -441,6 +441,109 @@ export function AccuracyLabPage({ cutoffTimeLondon, cutoffDayOffset }) {
             </div>
           </div>
 
+          {/* Accuracy Grouped by Wind Generation Level (Quantile Tertile Regimes) */}
+          {(summary.generation_level_buckets || []).length > 0 && (
+            <div className="editorial-panel">
+              <div className="panel-header">
+                <div>
+                  <span className="section-eyebrow">
+                    GENERATION-LEVEL ACCURACY • EMPIRICAL TERTILE QUANTILES (P33 &amp; P67)
+                  </span>
+                  <h3 className="panel-title">
+                    Accuracy by Wind Generation Level (Low, Medium &amp; High Wind Output Regimes)
+                  </h3>
+                  <p className="panel-subtitle">
+                    Bucket thresholds are computed dynamically from the empirical P33.3 and P66.7
+                    quantiles of actual wind generation in the selected window (rather than fixed MW
+                    cutoffs).
+                  </p>
+                </div>
+                <span className="badge badge-official">DYNAMIC QUANTILE BUCKETS</span>
+              </div>
+
+              <div className="grid-sidebar-right" style={{ alignItems: 'center' }}>
+                <div className="data-table-wrap">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th>Wind Output Regime</th>
+                        <th>Quantile MW Range</th>
+                        <th>Hours (Share)</th>
+                        <th>Mean Actual / Forecast</th>
+                        <th>MAE (MW)</th>
+                        <th>RMSE (MW)</th>
+                        <th>Mean Bias (MW)</th>
+                        <th>P90 Error Buffer</th>
+                        <th>Over / Under (%)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {summary.generation_level_buckets.map((g) => (
+                        <tr key={g.bucket_id}>
+                          <td>
+                            <strong>{g.bucket_label}</strong>
+                          </td>
+                          <td>{g.quantile_range_label}</td>
+                          <td>
+                            {g.hours_count}h ({formatPct(g.share_pct, 1)})
+                          </td>
+                          <td>
+                            {formatMw(g.mean_actual_mw, 0)} / {formatMw(g.mean_forecast_mw, 0)}
+                          </td>
+                          <td style={{ fontWeight: 700, color: 'var(--accent-emerald)' }}>
+                            {formatMw(g.mae_mw, 1)}
+                          </td>
+                          <td>{formatMw(g.rmse_mw, 1)}</td>
+                          <td style={{ color: 'var(--status-amber)', fontWeight: 600 }}>
+                            {formatSignedMw(g.mean_bias_mw, 1)}
+                          </td>
+                          <td style={{ fontWeight: 700 }}>
+                            {formatSignedMw(g.p90_signed_error_mw, 0)}
+                          </td>
+                          <td>
+                            {formatPct(g.overforecast_pct, 1)} / {formatPct(g.underforecast_pct, 1)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div style={{ width: '100%', height: 250 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={summary.generation_level_buckets}
+                      margin={{ top: 10, right: 16, left: 8, bottom: 10 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E3DECF" />
+                      <XAxis
+                        dataKey="bucket_label"
+                        tick={{ fontSize: 10, fontFamily: 'var(--font-mono)', fill: '#3C5244' }}
+                        tickFormatter={(v) => v.split('(')[0].trim()}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 11, fontFamily: 'var(--font-mono)', fill: '#3C5244' }}
+                        unit=" MW"
+                      />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: '#FAF8F3',
+                          borderColor: '#1B5E3C',
+                          fontFamily: 'var(--font-mono)',
+                          fontSize: '12px',
+                        }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: '11px', fontFamily: 'var(--font-mono)' }} />
+                      <Bar dataKey="mae_mw" name="Regime MAE (MW)" fill="#1B5E3C" />
+                      <Bar dataKey="rmse_mw" name="Regime RMSE (MW)" fill="#76BE64" />
+                      <Bar dataKey="mean_bias_mw" name="Mean Bias (MW)" fill="#C47416" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Lead-Time Horizon Table */}
           <div className="editorial-panel">
             <div className="panel-header">

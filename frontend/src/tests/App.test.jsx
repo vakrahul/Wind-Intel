@@ -12,6 +12,7 @@ import {
 import { LoadingState, ErrorState, EmptyState } from '../components/StateBanners';
 import { EnergyIntelligenceTree } from '../components/EnergyIntelligenceTree';
 import { DataLineagePipeline } from '../components/DataLineagePipeline';
+import App from '../App';
 
 describe('WINDLINE Frontend Formatters & State Components', () => {
   it('formats MW, signed MW, MWh, and target UTC strings accurately', () => {
@@ -123,5 +124,23 @@ describe('WINDLINE Frontend Formatters & State Components', () => {
       />
     );
     expect(screen.getByText(/BLOCKED AFTER DEADLINE: 6/i)).toBeInTheDocument();
+  });
+
+  it('launches full-screen Live Control Room Demo and returns to Dashboard via Back button', () => {
+    window.scrollTo = () => {};
+    render(<App />);
+    const launchBtns = screen.getAllByRole('button', { name: /Launch Live Demo/i });
+    expect(launchBtns.length).toBeGreaterThan(0);
+
+    fireEvent.click(launchBtns[0]);
+    expect(
+      screen.getByText(/WINDLINE • NATIONAL WIND CONTROL ROOM DEMO/i)
+    ).toBeInTheDocument();
+
+    const backBtn = screen.getByRole('button', { name: /Back to Dashboard/i });
+    fireEvent.click(backBtn);
+    expect(
+      screen.getByText(/Know Your Wind Power Forecast & Backup Needs/i)
+    ).toBeInTheDocument();
   });
 });

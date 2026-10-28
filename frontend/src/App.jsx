@@ -7,6 +7,7 @@ import { ForecastTimelinePage } from './pages/ForecastTimelinePage';
 import { AccuracyLabPage } from './pages/AccuracyLabPage';
 import { PredictiveInsightsPage } from './pages/PredictiveInsightsPage';
 import { DataObservatoryPage } from './pages/DataObservatoryPage';
+import { LiveControlRoomDemo } from './pages/LiveControlRoomDemo';
 
 const NAV_ITEMS = [
   { id: 'landing', index: '00', label: 'Home' },
@@ -54,6 +55,22 @@ export default function App() {
     setActiveTab(tabId);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  if (activeTab === 'live-demo') {
+    return (
+      <LiveControlRoomDemo
+        selectedDate={selectedDate}
+        setSelectedDate={setSelectedDate}
+        selectedHour={selectedHour}
+        setSelectedHour={setSelectedHour}
+        cutoffTimeLondon={cutoffTimeLondon}
+        setCutoffTimeLondon={setCutoffTimeLondon}
+        cutoffDayOffset={cutoffDayOffset}
+        setCutoffDayOffset={setCutoffDayOffset}
+        onBackToDashboard={() => openWorkspaceTab('landing')}
+      />
+    );
+  }
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -104,13 +121,27 @@ export default function App() {
             ))}
           </nav>
 
-          <div className="status-pill" title="Backend & Elexon Data Status">
-            <span className="status-dot" />
-            <span>
-              {healthData?.january_2026_ready
-                ? `ELEXON DATA READY (${healthData.cached_hourly_actuals_jan2026}h)`
-                : 'CONNECTING API'}
-            </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => openWorkspaceTab('live-demo')}
+              style={{
+                padding: '0.42rem 0.9rem',
+                fontSize: '0.78rem',
+                borderRadius: 'var(--radius-pill)',
+              }}
+            >
+              Launch Live Demo
+            </button>
+            <div className="status-pill" title="Backend & Elexon Data Status">
+              <span className="status-dot" />
+              <span>
+                {healthData?.january_2026_ready
+                  ? `ELEXON DATA READY (${healthData.cached_hourly_actuals_jan2026}h)`
+                  : 'CONNECTING API'}
+              </span>
+            </div>
           </div>
         </div>
       </header>

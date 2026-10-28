@@ -122,18 +122,26 @@ export function LandingPage({
               <button
                 type="button"
                 className="btn-primary"
-                onClick={() => onOpenWorkspace('overview')}
+                onClick={() => onOpenWorkspace('live-demo')}
                 style={{ padding: '0.8rem 1.45rem', fontSize: '0.92rem' }}
               >
-                Open January 2026 Overview →
+                Launch Live Demo →
               </button>
               <button
                 type="button"
                 className="btn-pistachio"
-                onClick={() => onOpenWorkspace('tree')}
+                onClick={() => onOpenWorkspace('overview')}
                 style={{ padding: '0.8rem 1.35rem', fontSize: '0.92rem' }}
               >
-                Open Interactive Decision Tree &amp; Calculator
+                Open January 2026 Overview
+              </button>
+              <button
+                type="button"
+                className="btn-outline"
+                onClick={() => onOpenWorkspace('tree')}
+                style={{ padding: '0.8rem 1.25rem', fontSize: '0.86rem' }}
+              >
+                Open Decision Tree &amp; Calculator
               </button>
             </div>
 

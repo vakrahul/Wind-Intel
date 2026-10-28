@@ -374,6 +374,11 @@ def test_api_endpoints_with_test_client():
     assert r_csv.status_code == 200
     assert "target_start_utc,target_start_london" in r_csv.text
 
+    # Quantile-based generation level buckets verification
+    assert len(s_json["generation_level_buckets"]) == 3
+    total_bucket_hours = sum(b["hours_count"] for b in s_json["generation_level_buckets"])
+    assert total_bucket_hours == 744
+
 
 def test_missing_forecast_and_missing_actual_flagged_and_excluded_from_metrics():
     actuals_hourly = pd.DataFrame(

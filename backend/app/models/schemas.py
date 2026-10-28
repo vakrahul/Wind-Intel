@@ -149,6 +149,25 @@ class ExtremeErrorEvent(BaseModel):
     error_direction: str
 
 
+class GenerationLevelBucket(BaseModel):
+    bucket_id: str
+    bucket_label: str
+    quantile_range_label: str
+    min_actual_mw: float
+    max_actual_mw: float
+    hours_count: int
+    share_pct: float
+    mean_actual_mw: float
+    mean_forecast_mw: float
+    mae_mw: float
+    rmse_mw: float
+    mean_bias_mw: float
+    median_abs_error_mw: float
+    p90_signed_error_mw: Optional[float] = None
+    overforecast_pct: float
+    underforecast_pct: float
+
+
 class MetricsSummaryResponse(BaseModel):
     scope_label: str
     start_date: str
@@ -187,6 +206,7 @@ class MetricsSummaryResponse(BaseModel):
     error_percentiles_mw: ErrorPercentiles
     abs_error_percentiles_mw: ErrorPercentiles
     error_histogram: List[HistogramBin]
+    generation_level_buckets: List[GenerationLevelBucket] = []
     largest_overforecasts: List[ExtremeErrorEvent]
     largest_underforecasts: List[ExtremeErrorEvent]
 

@@ -62,7 +62,82 @@ def _compute_error_histogram(errors: np.ndarray, num_bins: int = 12) -> List[Dic
                 "underforecast_count": under_c,
             }
         )
-    return bins_out
+        return bins_out
+
+
+def _compute_generation_level_buckets(
+    actuals: np.ndarray, forecasts: np.ndarray, errors: np.ndarray
+) -> List[Dict[str, Any]]:
+    """
+    Groups forecast accuracy by empirical wind generation tertile quantiles (P33.3 and P66.7)
+    derived dynamically from the selected January 2026 actual generation distribution.
+    """
+    n = len(actuals)
+    if n < MIN_RELIABLE_SAMPLE:
+        return []
+
+    q33, q67 = np.percentile(actuals, [33.333, 66.667])
+    min_a = float(np.min(actuals))
+    max_a = float(np.max(actuals))
+
+    bucket_defs = [
+        (
+            "low_wind_quantile",
+            "Low Wind Regime (Bottom Tertile <= P33)",
+            f"<= {round(float(q33)):,} MW (P00–P33)",
+            actuals <= q33,
+            min_a,
+            float(q33),
+        ),
+        (
+            "medium_wind_quantile",
+            "Medium Wind Regime (Middle Tertile P33–P67)",
+            f"{round(float(q33)):,} to {round(float(q67)):,} MW (P33–P67)",
+            (actuals > q33) & (actuals <= q67),
+            float(q33),
+            float(q67),
+        ),
+        (
+            "high_wind_quantile",
+            "High Wind Regime (Top Tertile > P67)",
+            f"> {round(float(q67)):,} MW (P67–P100)",
+            actuals > q67,
+            float(q67),
+            max_a,
+        ),
+    ]
+
+    out: List[Dict[str, Any]] = []
+    for b_id, b_label, q_label, mask, b_min, b_max in bucket_defs:
+        sub_a = actuals[mask]
+        sub_f = forecasts[mask]
+        sub_e = errors[mask]
+        count = int(len(sub_a))
+        if count == 0:
+            continue
+        sub_abs = np.abs(sub_e)
+        p90_err = round(float(np.percentile(sub_e, 90)), 2) if count >= 5 else None
+        out.append(
+            {
+                "bucket_id": b_id,
+                "bucket_label": b_label,
+                "quantile_range_label": q_label,
+                "min_actual_mw": round(float(b_min), 1),
+                "max_actual_mw": round(float(b_max), 1),
+                "hours_count": count,
+                "share_pct": round((count / n) * 100.0, 1),
+                "mean_actual_mw": round(float(np.mean(sub_a)), 2),
+                "mean_forecast_mw": round(float(np.mean(sub_f)), 2),
+                "mae_mw": round(float(np.mean(sub_abs)), 2),
+                "rmse_mw": round(float(np.sqrt(np.mean(sub_e ** 2))), 2),
+                "mean_bias_mw": round(float(np.mean(sub_e)), 2),
+                "median_abs_error_mw": round(float(np.median(sub_abs)), 2),
+                "p90_signed_error_mw": p90_err,
+                "overforecast_pct": round(float(np.mean(sub_e > 0) * 100.0), 1),
+                "underforecast_pct": round(float(np.mean(sub_e < 0) * 100.0), 1),
+            }
+        )
+    return out
 
 
 class MetricsService:
@@ -143,6 +218,7 @@ class MetricsService:
                 "error_percentiles_mw": _compute_percentiles(np.array([])),
                 "abs_error_percentiles_mw": _compute_percentiles(np.array([])),
                 "error_histogram": [],
+                "generation_level_buckets": [],
                 "largest_overforecasts": [],
                 "largest_underforecasts": [],
             }
@@ -268,6 +344,9 @@ class MetricsService:
             "error_percentiles_mw": _compute_percentiles(errors),
             "abs_error_percentiles_mw": _compute_percentiles(abs_errors),
             "error_histogram": _compute_error_histogram(errors),
+            "generation_level_buckets": _compute_generation_level_buckets(
+                actuals, forecasts, errors
+            ),
             "largest_overforecasts": largest_over,
             "largest_underforecasts": largest_under,
         }
