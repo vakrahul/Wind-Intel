@@ -4,6 +4,12 @@
 
 The platform reconstructs historical forecast availability at a configurable purchasing cutoff (default **`11:00 Europe/London on D-1`**), aligns half-hourly settlement actuals into hourly averages, quantifies forecast error distributions, runs leak-free chronological walk-forward backtests, and visualizes decision relationships through an interactive **4-Level Energy Intelligence Tree**, **7-Stage Data Flow Pipeline**, and **Business Energy Scenario Simulator**.
 
+## Live Deployed Application
+
+- **Public Web Application:** [https://prod-main-app-4c4b86-00va318mcjr.compute.instacloud-edge.com](https://prod-main-app-4c4b86-00va318mcjr.compute.instacloud-edge.com)
+- **Live API Health Endpoint:** [https://prod-main-app-4c4b86-00va318mcjr.compute.instacloud-edge.com/api/health](https://prod-main-app-4c4b86-00va318mcjr.compute.instacloud-edge.com/api/health)
+- **Interactive OpenAPI Docs:** [https://prod-main-app-4c4b86-00va318mcjr.compute.instacloud-edge.com/docs](https://prod-main-app-4c4b86-00va318mcjr.compute.instacloud-edge.com/docs)
+
 ---
 
 ## Key January 2026 Empirical Findings (`D-1 11:00 London` Cutoff)

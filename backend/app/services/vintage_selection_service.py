@@ -97,37 +97,41 @@ class VintageSelectionService:
             tzinfo=LONDON_TZ,
         ).astimezone(UTC_TZ)
 
-        # Index actuals by hour_start_utc
+        # Index actuals by hour_start_utc using fast records/tuples instead of slow iterrows()
         actuals_map: Dict[str, Dict[str, Any]] = {}
         if not actuals_hourly_df.empty:
-            for _, row in actuals_hourly_df.iterrows():
+            for row in actuals_hourly_df.to_dict("records"):
+                act_val = row.get("actual_hourly_mw")
+                hh00_val = row.get("hh_00_mw")
+                hh30_val = row.get("hh_30_mw")
                 actuals_map[str(row["hour_start_utc"])] = {
-                    "actual_hourly_mw": float(row["actual_hourly_mw"])
-                    if pd.notna(row.get("actual_hourly_mw"))
+                    "actual_hourly_mw": float(act_val)
+                    if act_val is not None and pd.notna(act_val)
                     else None,
-                    "hh_00_mw": float(row["hh_00_mw"])
-                    if pd.notna(row.get("hh_00_mw"))
+                    "hh_00_mw": float(hh00_val)
+                    if hh00_val is not None and pd.notna(hh00_val)
                     else None,
-                    "hh_30_mw": float(row["hh_30_mw"])
-                    if pd.notna(row.get("hh_30_mw"))
+                    "hh_30_mw": float(hh30_val)
+                    if hh30_val is not None and pd.notna(hh30_val)
                     else None,
                     "pair_status": str(row.get("pair_status", "missing_actual")),
                 }
 
-        # Group vintages by start_time_utc (sorted by publish_time_utc ASC, generation_mw ASC)
+        # Group vintages by start_time_utc using fast zip over columns
         vintages_by_target: Dict[str, List[Tuple[str, float]]] = {}
         if not vintages_df.empty:
             sorted_v = vintages_df.sort_values(
                 by=["start_time_utc", "publish_time_utc", "generation_mw"],
                 ascending=[True, True, True],
             )
-            for _, row in sorted_v.iterrows():
-                gen = row.get("generation_mw")
+            for t_utc, p_utc, gen in zip(
+                sorted_v["start_time_utc"],
+                sorted_v["publish_time_utc"],
+                sorted_v["generation_mw"],
+            ):
                 if pd.isna(gen):
                     continue
-                t_utc = str(row["start_time_utc"])
-                p_utc = str(row["publish_time_utc"])
-                vintages_by_target.setdefault(t_utc, []).append((p_utc, float(gen)))
+                vintages_by_target.setdefault(str(t_utc), []).append((str(p_utc), float(gen)))
 
         selection_mode = (
             "fixed_lead_time" if fixed_horizon_hours is not None else "operational_cutoff"

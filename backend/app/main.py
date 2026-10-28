@@ -1,7 +1,11 @@
 from contextlib import asynccontextmanager
 import logging
+import os
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 from app.api import data_quality, forecasts, health, ingestion, metrics, predictive
 from app.config import settings
 from app.services.cache_service import cache_service
@@ -58,12 +62,35 @@ app.include_router(metrics.router)
 app.include_router(predictive.router)
 app.include_router(data_quality.router)
 
+STATIC_DIR = Path(os.getenv("WINDLINE_STATIC_DIR", "/app/static"))
+if STATIC_DIR.exists() and (STATIC_DIR / "index.html").exists():
+    assets_dir = STATIC_DIR / "assets"
+    if assets_dir.exists():
+        app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
 
-@app.get("/")
-def root():
-    return {
-        "name": settings.APP_NAME,
-        "version": settings.APP_VERSION,
-        "docs": "/docs",
-        "health": "/api/health",
-    }
+    @app.get("/windline-mark.svg")
+    def serve_logo():
+        logo_path = STATIC_DIR / "windline-mark.svg"
+        if logo_path.exists():
+            return FileResponse(str(logo_path), media_type="image/svg+xml")
+        return {"status": "not_found"}
+
+    @app.get("/")
+    def serve_spa_root():
+        return FileResponse(str(STATIC_DIR / "index.html"))
+
+    @app.get("/{full_path:path}")
+    def serve_spa_fallback(full_path: str):
+        candidate = STATIC_DIR / full_path
+        if candidate.is_file():
+            return FileResponse(str(candidate))
+        return FileResponse(str(STATIC_DIR / "index.html"))
+else:
+    @app.get("/")
+    def root():
+        return {
+            "name": settings.APP_NAME,
+            "version": settings.APP_VERSION,
+            "docs": "/docs",
+            "health": "/api/health",
+        }

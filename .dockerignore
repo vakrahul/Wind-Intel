@@ -1,0 +1,16 @@
+node_modules/
+frontend/node_modules/
+frontend/dist/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+backend/.pytest_cache/
+.git/
+.insta/
+.claude/
+.agents/
+.github/
+.venv/
+venv/
+.env
+*.log
